@@ -18,17 +18,13 @@ public class ImageAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<String> mPosterImages;
-    LayoutInflater inflater;
+    //LayoutInflater inflater;
 
     public ImageAdapter(Context c, ArrayList<String> posterImages){
         mContext = c;
         mPosterImages = posterImages;
-        inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public class Holder {
-        ImageView mImageView;
-    }
     @Override
     public Object getItem(int i) {
         return mPosterImages.get(i);
@@ -40,22 +36,29 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        final int num = i;
+        //Holds the view references
+        Holder holder;
 
-        Holder holder = new Holder();
+        if(convertView == null) {
+            convertView = inflater.inflate(R.layout.list_item_poster, parent, false);
+            holder = new Holder();
+            holder.mImageView = (ImageView) convertView.findViewById(R.id.list_item_poster_imageview);
+            convertView.setTag(holder);
+        }
+        else {
+            holder = (Holder) convertView.getTag();
+        }
+        if (mPosterImages.get(position) != null)
+            Picasso.with(mContext).load(mPosterImages.get(position)).into(holder.mImageView);
 
-        View griddleView;
-        griddleView = inflater.inflate(R.layout.list_item_poster, null);
-        holder.mImageView = (ImageView) griddleView.findViewById(R.id.list_item_poster_imageview);
+        return convertView;
+    }
 
-        //Picasso.with(mContext).setLoggingEnabled(true);
-        Picasso.with(mContext)
-                .load(mPosterImages.get(i))
-                .into(holder.mImageView);
-
-        return griddleView;
+    public class Holder {
+        ImageView mImageView;
     }
 
     @Override

@@ -73,9 +73,6 @@ public class MainActivityFragment extends Fragment {
 
     private void updateMovies() {
         FetchMovieTask movieTask = new FetchMovieTask();
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        String location = prefs.getString(getString(R.string.pref_location_key),
-//                getString(R.string.pref_location_default));
         movieTask.execute();
     }
 
@@ -238,8 +235,7 @@ public class MainActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList strings) {
             super.onPostExecute(strings);
-
-            gridView.setAdapter(new ImageAdapter(getActivity().getApplicationContext(), posterImages));
+            gridView.setAdapter(new ImageAdapter(getContext(), posterImages));
         }
     }
 
