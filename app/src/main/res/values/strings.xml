@@ -7,4 +7,5 @@
     <string name="pref_sort_key">sort</string>
     <string name="pref_sort_default">popular</string>
     <string name="pref_sort_label">Sorted By:</string>
+    <string name="no_internet">Please connect to the internet and try again.</string>
 </resources>

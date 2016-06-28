@@ -1,7 +1,10 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,10 +40,14 @@ public class MainActivityFragment extends Fragment {
     public ArrayList<String> movieDates = new ArrayList<>();
     public ArrayList<String> movieRatings = new ArrayList<>();
     public ArrayList<String> movieDescriptions = new ArrayList<>();
+    public ArrayList<String> movieIds = new ArrayList<>();
 
     String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w500";
     String popOrTop = "popular";
     GridView gridView;
+
+    //unchanging credentials
+    String API_KEY = "[Insert Key Here]";
 
     public MainActivityFragment() {
     }
@@ -63,12 +71,23 @@ public class MainActivityFragment extends Fragment {
                         .putExtra("posterUrl", posterImages.get(position).toString())
                         .putExtra("releaseDate", movieDates.get(position).toString())
                         .putExtra("rating", movieRatings.get(position).toString())
-                        .putExtra("description", movieDescriptions.get(position).toString());
+                        .putExtra("description", movieDescriptions.get(position).toString())
+                        .putExtra("id", movieIds.get(position).toString());
                 startActivity(detailIntent);
             }
         });
 
         return rootView;
+    }
+
+    //Check for an internet connection
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager)
+                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        return isConnected;
     }
 
     private void updateMovies() {
@@ -79,7 +98,12 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updateMovies();
+        if(isNetworkAvailable()) {
+            updateMovies();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet,
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -93,7 +117,7 @@ public class MainActivityFragment extends Fragment {
                     getString(R.string.pref_sort_key),
                     getString(R.string.pref_sort_popular));
 
-            //Check if the user wants the temperature in celsius or fahrenheit
+            //Check if the user wants the movie sorted by popularity or rating
             if(sortType.equals(getString(R.string.pref_sort_topRated))) {
                 popOrTop = "top_rated";
             } else {
@@ -110,6 +134,7 @@ public class MainActivityFragment extends Fragment {
             movieDates.clear();
             movieRatings.clear();
             movieDescriptions.clear();
+            movieIds.clear();
 
             //Places we need to look
             final String OWM_RESULTS = "results";
@@ -118,6 +143,7 @@ public class MainActivityFragment extends Fragment {
             final String OWM_POSTER = "poster_path";
             final String OWM_TITLE = "original_title";
             final String OWM_RATING = "vote_average";
+            final String OWM_MOVIEID = "id";
 
             JSONObject movieJson = new JSONObject(movieJsonStr);
             JSONArray movieArray = movieJson.getJSONArray(OWM_RESULTS);
@@ -128,6 +154,7 @@ public class MainActivityFragment extends Fragment {
                 String movieRating;
                 String movieDescription;
                 String moviePoster;
+                String movieId;
 
                 JSONObject currentMovie = movieArray.getJSONObject(i);
 
@@ -137,12 +164,14 @@ public class MainActivityFragment extends Fragment {
                 movieRating = currentMovie.getString(OWM_RATING);
                 movieDescription = currentMovie.getString(OWM_SYNOPSIS);
                 moviePoster = currentMovie.getString(OWM_POSTER);
+                movieId = currentMovie.getString(OWM_MOVIEID);
 
                 posterImages.add(POSTER_BASE_URL + moviePoster);
                 movieTitles.add(movieTitle);
                 movieDates.add(movieReleaseDate);
                 movieRatings.add(movieRating);
                 movieDescriptions.add(movieDescription);
+                movieIds.add(movieId);
 
             }
 
@@ -159,9 +188,6 @@ public class MainActivityFragment extends Fragment {
             //Will contain the raw JSON as a string
             String movieJsonStr = null;
 
-            //unchanging credentials
-            String API_KEY = "[Insert Key Here]";
-
             try {
                 final String API_KEY_PARAM = "api_key";
                 //Testing
@@ -176,7 +202,7 @@ public class MainActivityFragment extends Fragment {
 
                 URL url = new URL(myURL);
 
-                // Create the request to OpenWeatherMap, and open the connection
+                // Create the request to OpenMovieDB, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
