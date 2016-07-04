@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -42,6 +44,8 @@ public class DetailsFragment extends Fragment {
     ArrayAdapter<String> mReviewAdapter;
     ArrayAdapter<String> mTrailerAdapter;
 
+    DatabaseMaker dbMaker;
+
     public ArrayList<String> trailerKeys = new ArrayList<>();
     public ArrayList<String> trailerNames = new ArrayList<>();
     public ArrayList<String> reviews = new ArrayList<>();
@@ -55,18 +59,70 @@ public class DetailsFragment extends Fragment {
     private String mDescription;
     private String mId;
 
+    TextView textTitle, textDate, textRating, textDescription;
+    ImageView posterView;
+
     String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
     String API_KEY = "[Insert Key Here]";
 
     ListView reviewList;
     ListView trailerList;
 
+    OnMovieFavoritedListener mOnMovieFavoritedListener;
+
+    boolean favorited = false;
+
     public DetailsFragment() {
     }
+
+    public interface OnMovieFavoritedListener {
+        public void movieFavorited();
+    }
+
+    /**
+     * Called when a fragment is first attached to its context.
+     * {@link #onCreate(Bundle)} will be called after this.
+     *
+     * @param context
+     */
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mOnMovieFavoritedListener = (OnMovieFavoritedListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnMovieSelectedListener");
+        }
+
+    }
+
+    /**
+     * Called when the fragment is no longer attached to its activity.  This
+     * is called after {@link #onDestroy()}.
+     */
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnMovieFavoritedListener = null;
+    }
+
+
+//    @Override
+//    public void onCreate(@Nullable Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        setRetainInstance(true);
+//        //onSaveInstanceState(savedInstanceState);
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        dbMaker = new DatabaseMaker(getContext());
 
         mTrailerAdapter = new ArrayAdapter<String>(
                 getActivity(),
@@ -82,36 +138,80 @@ public class DetailsFragment extends Fragment {
 
         View rootView =  inflater.inflate(R.layout.fragment_detail, container, false);
 
+        textTitle = (TextView) rootView.findViewById(R.id.details_title);
+        posterView = (ImageView) rootView.findViewById(R.id.details_poster);
+        textRating = (TextView) rootView.findViewById(R.id.details_rating);
+        textDate = (TextView) rootView.findViewById(R.id.details_releasedate);
+        textDescription = (TextView) rootView.findViewById(R.id.details_description);
+
         trailerList = (ListView) rootView.findViewById(R.id.details_trailer_list);
         reviewList = (ListView) rootView.findViewById(R.id.details_review_list);
 
         trailerList.setAdapter(mTrailerAdapter);
         reviewList.setAdapter(mReviewAdapter);
 
-
+        final FloatingActionButton buttonFavorites = (FloatingActionButton)
+                rootView.findViewById(R.id.details_favorite_fab);
 
         Intent intent = getActivity().getIntent();
         if(intent != null && intent.hasExtra("title")) {
             mTitle = intent.getStringExtra("title");
             mPosterUrl = intent.getStringExtra("posterUrl");
-            mRating = "Rating: " + intent.getStringExtra("rating");
+            mRating = "Rating: " + intent.getStringExtra("rating") + "/10";
             mDate = "Release Date: " + intent.getStringExtra("releaseDate");
             mDescription = intent.getStringExtra("description");
             mId = intent.getStringExtra("id");
 
-            ((TextView) rootView.findViewById(R.id.details_title)).setText(mTitle);
-            ImageView posterView = (ImageView) rootView.findViewById(R.id.details_poster);
+
+            textTitle.setText(mTitle);
+
+
             Picasso.with(mContext).load(mPosterUrl).into(posterView);
-            ((TextView) rootView.findViewById(R.id.details_rating)).setText(mRating);
-            ((TextView) rootView.findViewById(R.id.details_releasedate)).setText(mDate);
-            ((TextView) rootView.findViewById(R.id.details_description)).setText(mDescription);
+
+
+            textRating.setText(mRating);
+
+
+            textDate.setText(mDate);
+
+
+            textDescription.setText(mDescription);
+
+            updateDetails();
         }
 
         trailerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(trailerKeys.get(position))));            }
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(trailerKeys.get(position))));
+            }
         });
+
+        if(!dbMaker.isFavorite(mId)) {
+            buttonFavorites.setImageResource(R.drawable.ic_favorite_border_white_48dp);
+        } else if (dbMaker.isFavorite(mId)) {
+            buttonFavorites.setImageResource(R.drawable.ic_favorite_white_48dp);
+        }
+
+        buttonFavorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!dbMaker.isFavorite(mId)){
+                    buttonFavorites.setImageResource(R.drawable.ic_favorite_white_48dp);
+                    dbMaker.addFavorite(mPosterUrl, mDescription, mDate, mId, mTitle, mRating);
+                    Toast.makeText(getContext(), "Added to favorites", Toast.LENGTH_SHORT).show();
+                    favorited = !favorited;
+                } else if (dbMaker.isFavorite(mId)){
+                    buttonFavorites.setImageResource(R.drawable.ic_favorite_border_white_48dp);
+                    dbMaker.deleteFavorite(mId);
+                    Toast.makeText(getContext(), "Removed from favorites", Toast.LENGTH_SHORT).show();
+                    favorited = !favorited;
+                }
+
+            }
+        });
+
+        onSaveInstanceState(savedInstanceState);
 
         return rootView;
     }
@@ -121,12 +221,6 @@ public class DetailsFragment extends Fragment {
         FetchTrailersTask trailersTask = new FetchTrailersTask();
         reviewsTask.execute();
         trailersTask.execute();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateDetails();
     }
 
     public class FetchReviewsTask extends AsyncTask<String, Void, ArrayList<String>> {
@@ -435,5 +529,21 @@ public class DetailsFragment extends Fragment {
             mListView.setLayoutParams(params);
             mListView.requestLayout();
         }
+    }
+
+    public void updateMovies(String mTitles, String mPosterUrls, String mDates, String mRatings,
+                             String mOverviews, String mIds) {
+        mTitle = mTitles;
+        mId = mIds;
+        mPosterUrl = mPosterUrls;
+        mDate = mDates;
+        mRating = mRatings;
+        mDescription = mOverviews;
+        textTitle.setText(mTitle);
+        textDate.setText(mDate);
+        textRating.setText(mRating);
+        textDescription.setText(mDescription);
+        Picasso.with(mContext).load(mPosterUrl).into(posterView);
+        updateDetails();
     }
 }

@@ -6,7 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.OnMovieSelectedListener,
+                                                                DetailsFragment.OnMovieFavoritedListener,
+                                                                FavoritesFragment.OnMovieFavoriteSelectedListener {
+
+    DetailsFragment detailsFragmentNew = (DetailsFragment) getSupportFragmentManager().findFragmentById(R.id.frag_details);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +21,60 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new MainActivityFragment())
                     .commit();
+        }
+    }
+
+    @Override
+    public void movieSelected(String mTitle, String mPosterUrl, String mDate, String mRating, String mOverview, String mId) {
+
+        DetailsFragment detailsFragment = (DetailsFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.frag_details);
+
+        if(detailsFragment != null) {
+            detailsFragment.updateMovies(mTitle, mPosterUrl, mDate, mRating, mOverview, mId);
+        } else {
+            Intent detailIntent = new Intent(MainActivity.this, DetailActivity.class)
+                        .putExtra("title", mTitle)
+                        .putExtra("posterUrl", mPosterUrl)
+                        .putExtra("releaseDate", mDate)
+                        .putExtra("rating", mRating)
+                        .putExtra("description", mOverview)
+                        .putExtra("id", mId);
+                startActivity(detailIntent);
+        }
+    }
+
+    @Override
+    public void movieFavorited() {
+        FavoritesFragment mag_favoriteMoviesFragment = (FavoritesFragment) getSupportFragmentManager()
+                .findFragmentByTag("FavFrag");
+
+        if (mag_favoriteMoviesFragment != null && mag_favoriteMoviesFragment.isVisible()) {
+            FavoritesFragment magFavoriteMoviesFragment = new FavoritesFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, magFavoriteMoviesFragment, "FavFrag")
+                    .commit();
+        }
+    }
+
+    @Override
+    public void movieFavoriteSelected(String mTitle, String mPosterUrl, String mDate, String mRating,
+                                      String mOverview, String mId) {
+
+        DetailsFragment detailsFragment = (DetailsFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.frag_details);
+
+        if(detailsFragment != null) {
+            detailsFragment.updateMovies(mTitle, mPosterUrl, mDate, mRating, mOverview, mId);
+        } else {
+            Intent detailIntent = new Intent(MainActivity.this, DetailActivity.class)
+                    .putExtra("title", mTitle)
+                    .putExtra("posterUrl", mPosterUrl)
+                    .putExtra("releaseDate", mDate)
+                    .putExtra("rating", mRating)
+                    .putExtra("description", mOverview)
+                    .putExtra("id", mId);
+            startActivity(detailIntent);
         }
     }
 
@@ -34,6 +92,14 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        if(id == R.id.action_favorites) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new FavoritesFragment())
+                    .addToBackStack("FavoritesFragment")
+                    .commit();
+            return true;
+        }
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent settingsIntent = new Intent(getApplication(), SettingsActivity.class);
@@ -42,4 +108,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

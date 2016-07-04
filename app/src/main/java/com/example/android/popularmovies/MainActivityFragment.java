@@ -1,7 +1,6 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -10,6 +9,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +43,8 @@ public class MainActivityFragment extends Fragment {
     public ArrayList<String> movieDescriptions = new ArrayList<>();
     public ArrayList<String> movieIds = new ArrayList<>();
 
+    OnMovieSelectedListener mOnMovieSelectedListener;
+
     String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w500";
     String popOrTop = "popular";
     GridView gridView;
@@ -52,6 +55,34 @@ public class MainActivityFragment extends Fragment {
     public MainActivityFragment() {
     }
 
+    public interface OnMovieSelectedListener {
+        public void movieSelected(String mTitle, String mPosterUrl, String mDate, String mRating,
+                                  String mOverview, String mId);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mOnMovieSelectedListener = (OnMovieSelectedListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnMovieSelectedListener");
+        }
+    }
+
+    /**
+     * Called when the fragment is no longer attached to its activity.  This
+     * is called after {@link #onDestroy()}.
+     */
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnMovieSelectedListener = null;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,23 +90,28 @@ public class MainActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         gridView = (GridView) rootView.findViewById(R.id.gridView_poster);
 
+        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        actionBar.setTitle("Popular Movies");
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.v("LOG_TAG", "Title: " + movieTitles.get(position).toString());
-                Log.v("LOG_TAG", "Release Date: " + movieDates.get(position).toString());
-                Log.v("LOG_TAG", "Rating: " + movieRatings.get(position).toString());
-                Log.v("LOG_TAG", "Description: " + movieDescriptions.get(position).toString());
-                Intent detailIntent = new Intent(getActivity(), DetailActivity.class)
-                        .putExtra("title", movieTitles.get(position).toString())
-                        .putExtra("posterUrl", posterImages.get(position).toString())
-                        .putExtra("releaseDate", movieDates.get(position).toString())
-                        .putExtra("rating", movieRatings.get(position).toString())
-                        .putExtra("description", movieDescriptions.get(position).toString())
-                        .putExtra("id", movieIds.get(position).toString());
-                startActivity(detailIntent);
+//                Intent detailIntent = new Intent(getActivity(), DetailActivity.class)
+//                        .putExtra("title", movieTitles.get(position).toString())
+//                        .putExtra("posterUrl", posterImages.get(position).toString())
+//                        .putExtra("releaseDate", movieDates.get(position).toString())
+//                        .putExtra("rating", movieRatings.get(position).toString())
+//                        .putExtra("description", movieDescriptions.get(position).toString())
+//                        .putExtra("id", movieIds.get(position).toString());
+//                startActivity(detailIntent);
+
+                mOnMovieSelectedListener.movieSelected(movieTitles.get(position).toString(),
+                        posterImages.get(position).toString(), movieDates.get(position).toString(),
+                        movieRatings.get(position).toString(), movieDescriptions.get(position).toString(),
+                        movieIds.get(position).toString());
             }
         });
+
 
         return rootView;
     }
@@ -123,7 +159,6 @@ public class MainActivityFragment extends Fragment {
             } else {
                 popOrTop = "popular";
             }
-
             return popOrTop;
         }
 
