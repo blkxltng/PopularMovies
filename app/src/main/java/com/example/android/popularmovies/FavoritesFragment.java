@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,7 +81,7 @@ public class FavoritesFragment extends Fragment {
         actionBar.setTitle("Your Favorites");
         gridView = (GridView) rootView.findViewById(R.id.gridView_poster);
 
-        Log.v("LOG_TAG", "Size: " + mMovies.size());
+        //Log.v("LOG_TAG", "Size: " + mMovies.size());
 
         gridView.setAdapter(mFavoritesAdapter);
 

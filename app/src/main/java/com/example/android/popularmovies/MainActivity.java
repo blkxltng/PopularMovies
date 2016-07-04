@@ -10,12 +10,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                                                                 DetailsFragment.OnMovieFavoritedListener,
                                                                 FavoritesFragment.OnMovieFavoriteSelectedListener {
 
-    DetailsFragment detailsFragmentNew = (DetailsFragment) getSupportFragmentManager().findFragmentById(R.id.frag_details);
+    DetailsFragment detailsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -24,10 +25,18 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         }
     }
 
+
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//
+//        String mTitle = savedInstanceState.getString("title");
+//    }
+
     @Override
     public void movieSelected(String mTitle, String mPosterUrl, String mDate, String mRating, String mOverview, String mId) {
 
-        DetailsFragment detailsFragment = (DetailsFragment) getSupportFragmentManager()
+        detailsFragment = (DetailsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.frag_details);
 
         if(detailsFragment != null) {

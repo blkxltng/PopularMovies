@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,9 @@ import java.util.ArrayList;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
+
+//    ArrayList<Movies> mMovies = new ArrayList<>();
+//    FavoritesAdapter mImageAdapter;
 
     public ArrayList<String> posterImages = new ArrayList<>();
     public ArrayList<String> movieTitles = new ArrayList<>();
@@ -84,6 +88,18 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if(isNetworkAvailable()) {
+            updateMovies();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -96,14 +112,6 @@ public class MainActivityFragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent detailIntent = new Intent(getActivity(), DetailActivity.class)
-//                        .putExtra("title", movieTitles.get(position).toString())
-//                        .putExtra("posterUrl", posterImages.get(position).toString())
-//                        .putExtra("releaseDate", movieDates.get(position).toString())
-//                        .putExtra("rating", movieRatings.get(position).toString())
-//                        .putExtra("description", movieDescriptions.get(position).toString())
-//                        .putExtra("id", movieIds.get(position).toString());
-//                startActivity(detailIntent);
 
                 mOnMovieSelectedListener.movieSelected(movieTitles.get(position).toString(),
                         posterImages.get(position).toString(), movieDates.get(position).toString(),
@@ -130,18 +138,6 @@ public class MainActivityFragment extends Fragment {
         FetchMovieTask movieTask = new FetchMovieTask();
         movieTask.execute();
     }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if(isNetworkAvailable()) {
-            updateMovies();
-        } else {
-            Toast.makeText(getContext(), R.string.no_internet,
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
 
     public class FetchMovieTask  extends AsyncTask<String, Void, ArrayList> {
 
@@ -193,6 +189,8 @@ public class MainActivityFragment extends Fragment {
 
                 JSONObject currentMovie = movieArray.getJSONObject(i);
 
+                Movies movies = new Movies();
+
                 //Movie name is in child titled "orignal_title". Get it.
                 movieTitle = currentMovie.getString(OWM_TITLE);
                 movieReleaseDate = currentMovie.getString(OWM_RELEASEDATE);
@@ -200,6 +198,9 @@ public class MainActivityFragment extends Fragment {
                 movieDescription = currentMovie.getString(OWM_SYNOPSIS);
                 moviePoster = currentMovie.getString(OWM_POSTER);
                 movieId = currentMovie.getString(OWM_MOVIEID);
+
+//                movies.setId(currentMovie.getString(OWM_TITLE));
+//                mMovies.add(movies);
 
                 posterImages.add(POSTER_BASE_URL + moviePoster);
                 movieTitles.add(movieTitle);

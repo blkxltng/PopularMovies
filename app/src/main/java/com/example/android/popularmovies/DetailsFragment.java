@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -109,14 +110,25 @@ public class DetailsFragment extends Fragment {
         mOnMovieFavoritedListener = null;
     }
 
-
 //    @Override
-//    public void onCreate(@Nullable Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
+//    public void onSaveInstanceState(Bundle outState) {
 //
-//        setRetainInstance(true);
-//        //onSaveInstanceState(savedInstanceState);
+//        outState.putString("title", mTitle);
+//        outState.putString("url", mPosterUrl);
+//        outState.putString("date", mDate);
+//        outState.putString("rating", mRating);
+//        outState.putString("description", mDescription);
+//        outState.putString("id", mId);
+//
+//        super.onSaveInstanceState(outState);
 //    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

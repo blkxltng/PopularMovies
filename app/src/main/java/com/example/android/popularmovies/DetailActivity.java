@@ -29,6 +29,7 @@ public class DetailActivity extends AppCompatActivity implements DetailsFragment
         getSupportFragmentManager().putFragment(outState, "DetailFrag", detailsFragment);
     }
 
+
     @Override
     public void movieFavorited() {
         FavoritesFragment mag_favoriteMoviesFragment = (FavoritesFragment) getSupportFragmentManager()
