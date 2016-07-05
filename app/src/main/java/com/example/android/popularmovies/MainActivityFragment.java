@@ -35,7 +35,7 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 //    ArrayList<Movies> mMovies = new ArrayList<>();
 //    FavoritesAdapter mImageAdapter;
@@ -62,6 +62,12 @@ public class MainActivityFragment extends Fragment {
     public interface OnMovieSelectedListener {
         public void movieSelected(String mTitle, String mPosterUrl, String mDate, String mRating,
                                   String mOverview, String mId);
+    }
+
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        updateMovies();
     }
 
     @Override
@@ -120,8 +126,23 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
+        PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .registerOnSharedPreferenceChangeListener(this);
+
 
         return rootView;
+    }
+
+    /**
+     * Called when the fragment is no longer in use.  This is called
+     * after {@link #onStop()} and before {@link #onDetach()}.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     //Check for an internet connection
