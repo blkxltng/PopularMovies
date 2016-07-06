@@ -10,6 +10,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                                                                 DetailsFragment.OnMovieFavoritedListener,
                                                                 FavoritesFragment.OnMovieFavoriteSelectedListener {
 
+    MainActivityFragment mainfragment;
     DetailsFragment detailsFragment;
 
     @Override
@@ -19,19 +20,23 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
 
         if (savedInstanceState == null) {
+
+            mainfragment = new MainActivityFragment();
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MainActivityFragment())
+                    .add(R.id.container, mainfragment, "MainFrag")
                     .commit();
+        } else {
+            mainfragment = (MainActivityFragment) getSupportFragmentManager()
+                    .getFragment(savedInstanceState, "MainFrag");
         }
     }
 
-
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//
-//        String mTitle = savedInstanceState.getString("title");
-//    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getSupportFragmentManager().putFragment(outState, "MainFrag", mainfragment);
+    }
 
     @Override
     public void movieSelected(String mTitle, String mPosterUrl, String mDate, String mRating, String mOverview, String mId) {

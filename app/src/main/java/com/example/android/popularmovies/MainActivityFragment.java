@@ -64,6 +64,17 @@ public class MainActivityFragment extends Fragment implements SharedPreferences.
                                   String mOverview, String mId);
     }
 
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//
+//        outState.putStringArrayList("movieTitles", movieTitles);
+//        outState.putStringArrayList("moviePosterUrls", posterImages);
+//        outState.putStringArrayList("movieDates", movieDates);
+//        outState.putStringArrayList("movieRatings", movieRatings);
+//        outState.putStringArrayList("movieDescriptions", movieDescriptions);
+//        outState.putStringArrayList("movieIds", movieIds);
+//    }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
