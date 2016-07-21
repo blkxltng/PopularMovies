@@ -7,7 +7,7 @@ scrolling grid of movie trailers, launches a details screen whenever a particula
 save favorites, play trailers, and read user reviews. This app utilizes core Android user interface components and 
 fetches movie information using themoviedb.org web API.
 
-# Moitivation
+# Motivation
 Built to fulfill project requirement for Udacity Nanodegree.
 
 # API Reference
