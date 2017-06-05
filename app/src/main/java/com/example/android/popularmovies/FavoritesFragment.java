@@ -69,7 +69,7 @@ public class FavoritesFragment extends Fragment {
 
         mDatabaseMaker = new DatabaseMaker(getContext());
         mMovies = mDatabaseMaker.retrieveFavoriteMovies();
-        mFavoritesAdapter = new FavoritesAdapter(getContext(), mMovies    );
+        mFavoritesAdapter = new FavoritesAdapter(getContext(), mMovies);
     }
 
     @Override
